@@ -1,0 +1,7 @@
+[package]
+name = "Axolotl"
+version = "0.1.0"
+edition = "2021" # Year for Rust version
+
+[dependencies]
+libbpf-rs = "0.23"
