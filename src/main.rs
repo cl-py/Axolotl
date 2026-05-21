@@ -20,17 +20,18 @@ use tracing_subscriber::fmt::format::FmtSpan; // used to declare when a logger p
 use tracing_subscriber::fmt::time::SystemTime; // used to allow for actual system clock and timestamps
 use tracing_subscriber::FmtSubscriber; //ties all the above features together
 
+//how to import the eBPF program
 mod logging{
     include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));
 }
-mod loggingsystem;
+mod event;
 
 //this sets the return type of main
 fn main() -> Result<(), libbpf_rs::Error>{
 
     let args = Args::parse();
 
-    //Initialize BPF Skeleton
+    //Initialize BPF Skeleton -- (eBPFname)SkelBuilder
     let skeleton_builder = LoggingSkelBuilder::default();
     let mut open_object = MaybeUninit::uinit();
     let open_skeleton = skeleton_builder.open(&mut open_object)?; //question mark makes it so that the function returns immediately and safely for user
