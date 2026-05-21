@@ -55,32 +55,32 @@ $(OUTPUT)/%.bpf.o: src/bpf/%.bpf.c $(VMLINUX) | $(OUTPUT)
 	$(Q)$(BPFTOOL) gen object $@ $(patsubst %.bpf.o,%.tmp.bpf.o,$@)
 
 # Generate BPF skeletons (if needed for Rust)
-$(OUTPUT)/%.skel.h: $(OUTPUT)/%.bpf.o | $(OUTPUT)
+$(OUTPUT)/%.skel.h: logging/%.bpf.o | $(OUTPUT)
 	$(call msg,GEN-SKEL,$@)
 	$(Q)$(BPFTOOL) gen skeleton $< > $@
 
 # Build the Rust binary
-$(BINARY_NAME): $(OUTPUT)/$(BINARY_NAME).bpf.o | $(OUTPUT)
+$(BINARY_NAME): $(OUTPUT)/logging.bpf.o | $(OUTPUT)
 	$(call msg,CARGO,$@)
 	$(Q)$(CARGO) build --release
 	$(Q)cp $(TARGET_DIR)/$(BINARY_NAME) ./
 
 # Build in debug mode
 .PHONY: debug
-debug: $(OUTPUT)/$(BINARY_NAME).bpf.o | $(OUTPUT)
+debug: $(OUTPUT)/logging.bpf.o | $(OUTPUT)
 	$(call msg,CARGO,debug)
 	$(Q)$(CARGO) build
 	$(Q)cp target/debug/$(BINARY_NAME) ./$(BINARY_NAME)-debug
 
 # Run cargo check
 .PHONY: check
-check: $(OUTPUT)/$(BINARY_NAME).bpf.o | $(OUTPUT)
+check: $(OUTPUT)/logging.bpf.o | $(OUTPUT)
 	$(call msg,CARGO,check)
 	$(Q)$(CARGO) check
 
 # Run cargo test
 .PHONY: test
-test: $(OUTPUT)/$(BINARY_NAME).bpf.o | $(OUTPUT)
+test: $(OUTPUT)/logging.bpf.o | $(OUTPUT)
 	$(call msg,CARGO,test)
 	$(Q)$(CARGO) test
 
