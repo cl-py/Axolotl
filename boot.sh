@@ -47,3 +47,5 @@ else
 fi
 
 make
+
+sudo ./Axolotl
