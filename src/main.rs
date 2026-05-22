@@ -22,13 +22,13 @@ use libbpf_rs::{skel::{OpenSkel, Skel, SkelBuilder}};
 use nix::net::if_::if_nametoindex;
 
 //how to import the eBPF program
-mod logging{
-    include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));
+mod filtering{
+    include!(concat!(env!("OUT_DIR"), "/filtering.skel.rs"));
 }
 mod event;
 mod userbuf;
 
-use logging::*;
+use filtering::*;
 
 // #[derive(Parser)]
 // struct Args{
@@ -41,7 +41,7 @@ fn main() -> Result<(), libbpf_rs::Error>{
     // let args = Args::parse();
 
     //Initialize BPF Skeleton -- (eBPFname)SkelBuilder
-    let skeleton_builder = LoggingSkelBuilder::default();
+    let skeleton_builder = FilteringSkelBuilder::default();
     let mut open_object = MaybeUninit::uninit();
     let open_skeleton = skeleton_builder.open(&mut open_object).unwrap(); 
     let mut skeleton = open_skeleton.load().unwrap();
