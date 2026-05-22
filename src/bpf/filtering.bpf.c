@@ -45,8 +45,8 @@ int tc_ingress(struct __sk_buff *ctx)
 		return TC_ACT_OK;
 	}
 
-	bpf_printk("done~");
-
+	// src ip
+	struct ethhdr *6;
 
 	return TC_ACT_OK;
 }
