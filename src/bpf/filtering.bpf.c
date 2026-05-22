@@ -24,20 +24,18 @@ int tc_ingress(struct __sk_buff *ctx)
 
 	struct ethhdr *eth;
 	struct iphdr *iph;
-
-	bpf_printk("done~");
-
+	
 	if (ctx->protocol == bpf_htons(ETH_P_IP)){
 		eth = data;
-		if ((void*)(eth + 1) > data_end)
+		if (void*)(eth + 1) > data_end
 			return TC_ACT_OK;
 		iph = (struct iphdr*)(eth + 1);
 
-		if ((void*)(iph + 1) > data_end)
+		if (void*)(iph + 1) > data_end
 			return TC_ACT_OK;
 		bpf_printk("got IPv4 packet from: %d, incoming to %d\n", iph->saddr, iph->daddr);
 
-	}else if (ctx->protocol == bpf_htons(ETH_P_IPV6)){
+	}else if (ctx->protocol == bpf_htons(ETH_P_IPV6){
 		// IPv6 Packet
 		return TC_ACT_OK;
 	}else{
@@ -45,8 +43,6 @@ int tc_ingress(struct __sk_buff *ctx)
 		return TC_ACT_OK;
 	}
 
-	// src ip
-	struct ethhdr *6;
 
 	return TC_ACT_OK;
 }
