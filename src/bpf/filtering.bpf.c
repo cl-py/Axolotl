@@ -2,7 +2,15 @@
 #include <bpf/bpf_helpers.h>
 #include <linux/if_ether.h>
 
+struct {
+	__uint(type, BPF_MAP_TYPE_RINGBUF);
+	__uint(max_entries, 256 * 1024);
+} events SEC(".maps");
+
 char LICENSE[] SEC("license") = "GPL";
+
+/// @tchook {"ifindex":1, "attach_point":"BPF_TC_INGRESS"}
+/// @tcopts {"handle":1, "priority":1}
 
 SEC("tc")
 int tc_ingress(struct __sk_buff *ctx)
