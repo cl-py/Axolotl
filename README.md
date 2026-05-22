@@ -15,6 +15,7 @@
 
 ---
 
+## What is Axolotl?
 
 Axolotl consists of a series of **eBPF programs** that implement an **enhanced firewall** and **traffic monitoring** system on top of **OpenWRT**. The project uses eBPF programs written in C, attached to the OpenWRT kernel, which communicate with userspace services written in Rust. OpenWRT, a **Linux based operating system for routers**, was deployed onto a **Raspberry Pi 5**, where the eBPF programs were loaded and executed to provide real-time networking monitoring and filtering capabilities.
 
@@ -39,3 +40,7 @@ chmod +x boot.sh
 ```
 
 Make sure to allow **all** installs for dependencies that follow
+
+## Contributors
+[![Claudia](https://img.shields.io/badge/Claudia_Varnas-FFA6D7?style=for-the-badge&logo=github&logoColor=white)](https://github.com/cl-py)
+[![Eduardo](https://img.shields.io/badge/Eduardo_Murillo-F9C2E2?style=for-the-badge&logo=github&logoColor=white)](https://github.com/edmuri)
