@@ -11,7 +11,15 @@ use clap::{ArgAction, Parser};
 
 //these are for trait resolution. It's implementing the interfaces without explicitly calling so 
 //it is left as _
-use libbpf_rs::skel::{OpenSkel, SkelBuilder, Skel};
+use libbpf_rs::{UserRingBuffer, UserRingBufferSample, libbpf_sys::user_ring_buffer, skel::{OpenSkel, Skel, SkelBuilder}};
+use libbpf_rs::MapCore as _;
+use libbpf_rs::MapFlags;
+use libbpf_rs::TcHookBuilder;
+use libbpf_rs::TC_CUSTOM;
+use libbpf_rs::TC_EGRESS;
+use libbpf_rs::TC_H_CLSACT;
+use libbpf_rs::TC_H_MIN_INGRESS;
+use libbpf_rs::TC_INGRESS;
 
 //these are used for logging
 // use tracing::subscriber::set_global_default as set_global_subscriber;
@@ -33,6 +41,20 @@ struct Args{
 
 }
 
+// fn pass_arguments(user_ring: UserRingBuffer){
+//     let mut example = user_ring.reserve( 12);
+//     // Hello User!
+//     match example{
+//         Ok(mut sample)=>{
+//             sample.as_mut().copy_from_slice(b"Hello User!");
+//             sample.commit();
+//         }
+//         Err(e)=>{
+//             println!("Failed");
+//         }
+//     }
+// }
+
 //this sets the return type of main
 fn main() -> Result<(), libbpf_rs::Error>{
 
@@ -46,6 +68,16 @@ fn main() -> Result<(), libbpf_rs::Error>{
 
     //assigns attack to something so its not destructed after it executes..was causing a silent crash
     let mut __link_state = skeleton.attach();
+
+    let mut tc_builder = TcHookBuilder::new(skel.progs.tc_ingress.as_fd());
+    tc_builder.ifindex(if_nametoindex("wlo1").unwrap()).handle(1).priority(1);
+
+    let mut ingress = tc_builder.hook(TC_INGRESS);
+    ingress.create().context("Failed to create TC ingress hook layer")?;
+    ingress.attach().context("Failed to attach eBPF program to ingress")?;
+    //creates new user ring buffer
+    // let mut user_ring = libbpf_rs::UserRingBuffer::new(&skeleton.maps.user_ring).unwrap();
+    // pass_arguments(user_ring);
 
     //Set up ring buffer with event handler
     let mut builder = libbpf_rs::RingBufferBuilder::new();
