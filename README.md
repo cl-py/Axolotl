@@ -17,7 +17,7 @@
 
 ## What is Axolotl?
 
-Axolotl consists of a series of eBPF programs that implement an enhanced firewall and traffic monitoring system onto OpenWRT. This was built with eBPF programs made in C that were loaded onto the OpenWRT programs and communicate with userspace code written in Rust. The OpenWRT, a Linux based Operating System used for routers, was loaded onto the Raspberry Pi 5 where it had the eBPF programs attached to it.  
+Axolotl consists of a series of **eBPF programs** that implement an **enhanced firewall** and **traffic monitoring** system on top of **OpenWRT**. The project uses eBPF programs written in C, attached to the OpenWRT kernel, which communicate with userspace services written in Rust. OpenWRT, a **Linux based operating system for routers**, was deployed onto a **Raspberry Pi 5**, where the eBPF programs were loaded and executed to provide real-time networking monitoring and filtering capabilities.
 
 eBPF (extended Berkeley Packet Filter) is a technology, originating in the Linux Kernel, that allows for programs to run with elevated privileges inside kernel space. They are event-driven programs that hook into the kernel similar to kprobes.  
 
