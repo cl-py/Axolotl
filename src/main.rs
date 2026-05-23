@@ -65,6 +65,20 @@ enum IpFilterCommand{
     Ls,
 }
 
+// fn pass_arguments(user_ring: UserRingBuffer){
+//     let mut example = user_ring.reserve( 12);
+//     // Hello User!
+//     match example{
+//         Ok(mut sample)=>{
+//             sample.as_mut().copy_from_slice(b"Hello User!");
+//             sample.commit();
+//         }
+//         Err(e)=>{
+//             println!("Failed");
+//         }
+//     }
+// }
+
 //this sets the return type of main
 fn main() -> Result<(), libbpf_rs::Error>{
 

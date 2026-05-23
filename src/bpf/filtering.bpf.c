@@ -26,6 +26,14 @@ static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
     return 0;
 }
 
+
+struct {
+	__uint(type, BPF_MAP_TYPE_RINGBUF);
+	__uint(max_entries, 256 * 1024);
+} events SEC(".maps");
+
+char LICENSE[] SEC("license") = "GPL";
+
 /// @tchook {"ifindex":3, "attach_point":"BPF_TC_INGRESS"}
 /// @tcopts {"handle":1, "priority":1}
 
