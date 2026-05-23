@@ -5,6 +5,27 @@
 #include <linux/pkt_cls.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
+#include "defs.h"
+
+char LICENSE[] SEC("license") = "GPL";
+
+
+struct{
+    __uint(type, BPF_MAP_TYPE_USER_RINGBUF);
+    __uint(max_entries, 256 * 1024);
+} user_ring SEC(".maps");
+
+static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
+{
+    const struct configs *data;
+
+    data = bpf_dynptr_data(dynptr, 0, sizeof(*data));
+    if (!data)
+        return 0;
+    bpf_printk("PLACEHOLDER: %s",data->message);
+    return 0;
+}
+
 
 struct {
 	__uint(type, BPF_MAP_TYPE_RINGBUF);
@@ -45,7 +66,7 @@ int tc_ingress(struct __sk_buff *ctx)
 		return TC_ACT_OK;
 	}
 
-	bpf_printk("done~");
+	bpf_user_ringbuf_drain(&user_ring, user_ringbuf_callback, NULL, 0);
 
 
 	return TC_ACT_OK;
