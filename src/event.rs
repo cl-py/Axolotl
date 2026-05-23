@@ -13,6 +13,7 @@ impl EventHandler{
         Self{}
     }
     //returns nothing
+    // callback function for kernel ringbuffer
     pub fn handle(&self, data: &[u8]){
         println!("Data: {:?}", data);
     }

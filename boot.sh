@@ -9,7 +9,8 @@ echo "$line_start Checking dependencies"
 echo -e "==========================\n"
 
 Packages=(
-    "bpftool" 
+    "linux-tools-common"
+    "linux-tools-$(uname -r)" 
     "build-essential"
     "cargo"
     "clang"
