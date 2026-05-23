@@ -36,7 +36,11 @@ int tc_ingress(struct __sk_buff *ctx)
 
 		if ((void*)(iph + 1) > data_end)
 			return TC_ACT_OK;
+<<<<<<< HEAD
 		bpf_printk("got IPv4 packet from: %pI4, incoming to %pI4\n", &iph->saddr, &iph->daddr);
+=======
+		bpf_printk("got IPv4 packet from: %d, incoming to %d\n", iph->saddr, iph->daddr);
+>>>>>>> fa9eeeb (test: adding filtering with rust library)
 
 	}else if (ctx->protocol == bpf_htons(ETH_P_IPV6)){
 		// IPv6 Packet
