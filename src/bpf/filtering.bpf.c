@@ -5,9 +5,26 @@
 #include <linux/pkt_cls.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
-
+#include "defs.h"
 
 char LICENSE[] SEC("license") = "GPL";
+
+
+struct{
+    __uint(type, BPF_MAP_TYPE_USER_RINGBUF);
+    __uint(max_entries, 256 * 1024);
+} user_ring SEC(".maps");
+
+static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
+{
+    const struct configs *data;
+
+    data = bpf_dynptr_data(dynptr, 0, sizeof(*data));
+    if (!data)
+        return 0;
+    bpf_printk("PLACEHOLDER: %s",data->message);
+    return 0;
+}
 
 /// @tchook {"ifindex":3, "attach_point":"BPF_TC_INGRESS"}
 /// @tcopts {"handle":1, "priority":1}
@@ -31,11 +48,7 @@ int tc_ingress(struct __sk_buff *ctx)
 
 		if ((void*)(iph + 1) > data_end)
 			return TC_ACT_OK;
-<<<<<<< HEAD
 		bpf_printk("got IPv4 packet from: %pI4, incoming to %pI4\n", &iph->saddr, &iph->daddr);
-=======
-		bpf_printk("got IPv4 packet from: %d, incoming to %d\n", iph->saddr, iph->daddr);
->>>>>>> fa9eeeb (test: adding filtering with rust library)
 
 	}else if (ctx->protocol == bpf_htons(ETH_P_IPV6)){
 		// IPv6 Packet
@@ -45,7 +58,7 @@ int tc_ingress(struct __sk_buff *ctx)
 		return TC_ACT_OK;
 	}
 
-	bpf_printk("done~");
+	bpf_user_ringbuf_drain(&user_ring, user_ringbuf_callback, NULL, 0);
 
 
 	return TC_ACT_OK;

@@ -1,6 +1,13 @@
-// Implementation for logging system
+/*
+    Project: Axolotl
+    Creators: Claudia Varnas, Eduardo Murillo
 
-//these imports create a "compiler shortcut"
+    This is the file that attaches the eBPF programs to their specified
+    attachment points that are specified in the eBPF programs. This also does
+    the building for all components of the transactions between 
+    producers and consumer roles that the user space and kernel space hold.
+
+*/
 
 // use std::library::function
 use std::mem::MaybeUninit; //allows for safe memory allocation without initialization
@@ -10,25 +17,22 @@ use std::os::unix::io::AsFd as  _;
 //these are for command-line handling
 use clap::{ArgAction, Parser, Subcommand};
 
-//these are for trait resolution. It's implementing the interfaces without explicitly calling so 
-//it is left as _
-use libbpf_rs::{skel::{OpenSkel, Skel, SkelBuilder}};
-// use libbpf_rs::MapCore as _;
-// use libbpf_rs::MapFlags;
-// use libbpf_rs::TcHookBuilder;
-// use libbpf_rs::TC_INGRESS;
-
 //allows for conversion of wol1 to the system's index
 use nix::net::if_::if_nametoindex;
 
+//libbpf_rs libraries
+use libbpf_rs::{skel::{OpenSkel, Skel, SkelBuilder}};
+use libbpf_rs::TcHookBuilder;
+use libbpf_rs::TC_INGRESS;
+
 //how to import the eBPF program
-mod logging{
-    include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));
+mod filtering{
+    include!(concat!(env!("OUT_DIR"), "/filtering.skel.rs"));
 }
 mod event;
 mod userbuf;
 
-use logging::*;
+use filtering::*;
 
 #[derive(Parser)]
 struct Cli{
@@ -61,24 +65,10 @@ enum IpFilterCommand{
     Ls,
 }
 
-// fn pass_arguments(user_ring: UserRingBuffer){
-//     let mut example = user_ring.reserve( 12);
-//     // Hello User!
-//     match example{
-//         Ok(mut sample)=>{
-//             sample.as_mut().copy_from_slice(b"Hello User!");
-//             sample.commit();
-//         }
-//         Err(e)=>{
-//             println!("Failed");
-//         }
-//     }
-// }
-
 //this sets the return type of main
 fn main() -> Result<(), libbpf_rs::Error>{
 
-    //Parsing command-line arguments
+    /************** Parsing command-line arguments **************/
     let args = Cli::parse();
 
     match args.cmd {
@@ -97,25 +87,23 @@ fn main() -> Result<(), libbpf_rs::Error>{
         }
     }
     
-    //Initialize BPF Skeleton -- (eBPFname)SkelBuilder
-    let skeleton_builder = LoggingSkelBuilder::default();
+    /************** Initialize BPF Skeleton **************/
+    //                      (eBPFname)SkelBuilder
+    let skeleton_builder = FilteringSkelBuilder::default();
     let mut open_object = MaybeUninit::uninit();
     let open_skeleton = skeleton_builder.open(&mut open_object).unwrap(); 
     let mut skeleton = open_skeleton.load().unwrap();
     //assigns attack to something so its not destructed after it executes..was causing a silent crash
     let mut __link_state = skeleton.attach();
 
-
-/*
-    //builds the hook for the traffic control layer
+    /************** builds the hook for the traffic control layer **************/
     let mut tc_builder = TcHookBuilder::new(skeleton.progs.tc_ingress.as_fd());
     tc_builder.ifindex(if_nametoindex("wlo1").unwrap() as i32).handle(1).priority(1); //configurations for hook
     let mut ingress = tc_builder.hook(TC_INGRESS); // assigns which direction to attach to
     ingress.create()?; //creates new interface for the hook
     ingress.attach()?; // attaches the hook
 
-*/
-    //creates new user ring buffer
+    /************** creates new user ring buffer **************/
     let mut user_ring = libbpf_rs::UserRingBuffer::new(&skeleton.maps.user_ring).unwrap();
     userbuf::pass_arguments(&mut user_ring);
 
