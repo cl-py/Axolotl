@@ -8,7 +8,7 @@ use std::time::Duration; //Imports time types (seconds, etc)
 use std::os::unix::io::AsFd as  _;
 
 //these are for command-line handling
-use clap::{ArgAction, Parser};
+use clap::{ArgAction, Parser, Subcommand};
 
 //these are for trait resolution. It's implementing the interfaces without explicitly calling so 
 //it is left as _
@@ -40,8 +40,34 @@ mod event;
 use filtering::*;
 
 #[derive(Parser)]
-struct Args{
+struct Cli{
+    #[command(subcommand)]
+    cmd: TopLevelCommand,
+}
 
+#[derive(Subcommand)]
+enum TopLevelCommand{
+    Ipfilter{
+        #[command(subcommand)]
+        cmd: IpFilterCommand
+    },
+    // NOTE: More programs would go below here, once we add them.
+    
+}
+
+// NOTE: This version of ipfilter takes one optional ip if passed with add command.
+// Using a String type, it can likely not take more than one ip at a time as of right now.
+#[derive(Subcommand)]
+enum IpFilterCommand{
+    Add{
+        ip: String
+    },
+
+    Del{
+        ip: String
+    },
+
+    Ls,
 }
 
 // fn pass_arguments(user_ring: UserRingBuffer){
@@ -61,8 +87,25 @@ struct Args{
 //this sets the return type of main
 fn main() -> Result<(), libbpf_rs::Error>{
 
-    let args = Args::parse();
+    //Parsing command-line arguments
+    let args = Cli::parse();
 
+    match args.cmd {
+        TopLevelCommand::Ipfilter {cmd} => {
+            match cmd {
+                IpFilterCommand::Add {ip} => {
+                    println!("add Command not implemented.");
+                }
+                IpFilterCommand::Del {ip} => {
+                    println!("del Command not implemented.");
+                }
+                IpFilterCommand::Ls => {
+                    println!("ls Command not implemented.");
+                }
+            }
+        }
+    }
+    
     //Initialize BPF Skeleton -- (eBPFname)SkelBuilder
     let skeleton_builder = FilteringSkelBuilder::default();
     let mut open_object = MaybeUninit::uninit();
@@ -73,7 +116,7 @@ fn main() -> Result<(), libbpf_rs::Error>{
     let mut __link_state = skeleton.attach();
 
     let mut tc_builder = TcHookBuilder::new(skeleton.progs.tc_ingress.as_fd());
-    tc_builder.ifindex(2).handle(1).priority(1);
+    tc_builder.ifindex(3).handle(1).priority(1).replace(true);
     //if_nametoindex("wlo1").unwrap()
 
     let mut ingress = tc_builder.hook(TC_INGRESS);
