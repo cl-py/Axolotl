@@ -5,12 +5,12 @@ use std::path::PathBuf;
 
 use libbpf_cargo::SkeletonBuilder;
 
-const SRC: &str = "src/bpf/filtering.bpf.c";
+const SRC: &str = "src/bpf/logging.bpf.c";
 
 fn main() {
     let mut out =
         PathBuf::from(env::var_os("OUT_DIR").expect("OUT_DIR must be set in build script"));
-    out.push("filtering.skel.rs");
+    out.push("logging.skel.rs");
 
     let _arch = env::var("CARGO_CFG_TARGET_ARCH")
         .unwrap_or_else(|_| "x86_64".to_string());
