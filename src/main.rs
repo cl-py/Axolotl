@@ -12,7 +12,7 @@
 // use std::library::function
 use std::mem::MaybeUninit; //allows for safe memory allocation without initialization
 use std::time::Duration; //Imports time types (seconds, etc)
-use std::os::unix::io::AsFd as  _;
+use std::os::unix::io::AsFd as  _; 
 
 //these are for command-line handling
 use clap::{ArgAction, Parser, Subcommand};
@@ -75,6 +75,7 @@ fn main() -> Result<(), libbpf_rs::Error>{
         TopLevelCommand::Ipfilter {cmd} => {
             match cmd {
                 IpFilterCommand::Add {ip} => {
+                    lib::parseip(ip);
                     println!("add Command not implemented.");
                 }
                 IpFilterCommand::Del {ip} => {
