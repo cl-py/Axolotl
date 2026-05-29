@@ -3,7 +3,7 @@ use plain::Plain;
 
 #[repr(C)]
 pub struct configs{
-    pub message: [u8;11]
+    pub ip: u32,
 }
 
 unsafe impl Plain for configs{}
