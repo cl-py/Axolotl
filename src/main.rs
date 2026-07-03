@@ -114,9 +114,9 @@ fn main() -> Result<(), libbpf_rs::Error>{
     let event_hander = event::EventHandler::new(); // creates the event handler
 
     builder.add(&skeleton.maps.events, move |data|{
-        event_hander.handle(data);
-        0
-    }).unwrap(); //passes the handler into the ringbuffer as the callback
+                event_hander.handle(data);
+                0
+                }).unwrap(); //passes the handler into the ringbuffer as the callback
 
     let ringbuf = builder.build().unwrap(); // builds the buffer
     while ringbuf.poll(Duration::MAX).is_ok(){}; //continuously polls ring buffer
