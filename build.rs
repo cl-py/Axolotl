@@ -9,17 +9,13 @@ use std::path::PathBuf;
 
 use libbpf_cargo::SkeletonBuilder;
 
-const SRC: &str = "src/bpf/filtering.bpf.c";
-const SRC2: &str = "src/bpf/logging.bpf.c";
-
 const BPF_PROGRAMS: &[(&str, &str)] = &[
     ("src/bpf/filtering.bpf.c","filtering.skel.rs"),
     ("src/bpf/logging.bpf.c","logging.skel.rs")
 ];
 
 fn main() {
-    let mut out =
-        PathBuf::from(
+    let out = PathBuf::from(
             env::var_os("OUT_DIR")
             .expect("OUT_DIR must be set in build script"));
 
@@ -30,17 +26,21 @@ fn main() {
     let vmlinux_path = ".";
 
     for &(src, skeleton_name) in BPF_PROGRAMS{
+
+        let mut output_path = out.clone();
+        output_path.push(skeleton_name);
+
         SkeletonBuilder::new()
-                        .source(SRC)
+                        .source(src)
                         .clang_args([
                             OsStr::new("-I"),
                             Path::new(&vmlinux_path).as_os_str(),
                             OsStr::new("-I"),
                             Path::new(".output").as_os_str(),
                         ])
-                        .build_and_generate(out)
+                        .build_and_generate(output_path)
                         .expect("bpf compilation failed");
 
-        println!("cargo:rerun-if-changed={}", SRC);
+        println!("cargo:rerun-if-changed={}", src);
     }
 }

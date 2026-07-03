@@ -35,6 +35,7 @@ mod logging{
 }
 mod event;
 mod userbuf;
+mod lib;
 
 use filtering::*;
 
@@ -49,6 +50,10 @@ enum TopLevelCommand{
     Ipfilter{
         #[command(subcommand)]
         cmd: IpFilterCommand
+    },
+    Detach{
+        #[command(subcommand)]
+        cmd: ProgramToDetach
     },
     // NOTE: More programs would go below here, once we add them.
     
@@ -129,7 +134,7 @@ fn main() -> Result<(), libbpf_rs::Error>{
 
     match args.cmd {
         TopLevelCommand::Ipfilter {cmd} => {
-            run_ip_filter(cmd)?;
+            run_filter(cmd)?;
         }
     }
     Ok(())

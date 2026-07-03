@@ -37,7 +37,7 @@ To begin using run the following on a *Linux Device*
 ```
 chmod +x boot.sh
 sudo ./boot.sh
-./Axolotl [COMMANDS]
+sudo ./Axolotl [COMMANDS]
 ```
 
 Make sure to allow **all** installs for dependencies that follow
