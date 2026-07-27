@@ -53,6 +53,7 @@ int tc_ingress(struct __sk_buff *ctx)
 
 		if ((void*)(iph + 1) > data_end)
 			return TC_ACT_OK;
+		// can be viewed at /sys/kernel/tracing/trace_pipe
 		bpf_printk("got IPv4 packet from: %pI4, incoming to %pI4\n", &iph->saddr, &iph->daddr);
 
 	}else if (ctx->protocol == bpf_htons(ETH_P_IPV6)){

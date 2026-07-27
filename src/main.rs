@@ -29,8 +29,13 @@ use libbpf_rs::TC_INGRESS;
 mod filtering{
     include!(concat!(env!("OUT_DIR"), "/filtering.skel.rs"));
 }
+
+mod logging{
+    include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));
+}
 mod event;
 mod userbuf;
+mod lib;
 
 use filtering::*;
 
@@ -45,6 +50,10 @@ enum TopLevelCommand{
     Ipfilter{
         #[command(subcommand)]
         cmd: IpFilterCommand
+    },
+    Detach{
+        #[command(subcommand)]
+        cmd: ProgramToDetach
     },
     // NOTE: More programs would go below here, once we add them.
     
@@ -65,29 +74,22 @@ enum IpFilterCommand{
     Ls,
 }
 
-//this sets the return type of main
-fn main() -> Result<(), libbpf_rs::Error>{
+fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
 
-    /************** Parsing command-line arguments **************/
-    let args = Cli::parse();
-
-    match args.cmd {
-        TopLevelCommand::Ipfilter {cmd} => {
-            match cmd {
-                IpFilterCommand::Add {ip} => {
-                    lib::parseip(ip);
-                    println!("add Command not implemented.");
-                }
-                IpFilterCommand::Del {ip} => {
-                    println!("del Command not implemented.");
-                }
-                IpFilterCommand::Ls => {
-                    println!("ls Command not implemented.");
-                }
-            }
+    match cmd {
+        IpFilterCommand::Add {ip} => {
+            lib::parseip(ip);
+            println!("add Command not implemented.");
         }
+        IpFilterCommand::Del {ip} => {
+            println!("del Command not implemented.");
+        }
+        IpFilterCommand::Ls => {
+            println!("ls Command not implemented.");
+        }
+
     }
-    
+
     /************** Initialize BPF Skeleton **************/
     //                      (eBPFname)SkelBuilder
     let skeleton_builder = FilteringSkelBuilder::default();
@@ -114,12 +116,26 @@ fn main() -> Result<(), libbpf_rs::Error>{
     let event_hander = event::EventHandler::new(); // creates the event handler
 
     builder.add(&skeleton.maps.events, move |data|{
-        event_hander.handle(data);
-        0
-    }).unwrap(); //passes the handler into the ringbuffer as the callback
+                event_hander.handle(data);
+                0
+                }).unwrap(); //passes the handler into the ringbuffer as the callback
 
     let ringbuf = builder.build().unwrap(); // builds the buffer
     while ringbuf.poll(Duration::MAX).is_ok(){}; //continuously polls ring buffer
 
+    Ok(())
+}
+
+//this sets the return type of main
+fn main() -> Result<(), libbpf_rs::Error>{
+
+    /************** Parsing command-line arguments **************/
+    let args = Cli::parse();
+
+    match args.cmd {
+        TopLevelCommand::Ipfilter {cmd} => {
+            run_filter(cmd)?;
+        }
+    }
     Ok(())
 }
