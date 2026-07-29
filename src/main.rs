@@ -76,10 +76,11 @@ enum IpFilterCommand{
 
 fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
 
+    let mut parsed_ip: Option<u32> = None;
+
     match cmd {
         IpFilterCommand::Add {ip} => {
-            lib::parseip(ip);
-            println!("add Command not implemented.");
+            parsed_ip = Some(lib::parseip(&ip)?);
         }
         IpFilterCommand::Del {ip} => {
             println!("del Command not implemented.");
@@ -108,7 +109,10 @@ fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
 
     /************** creates new user ring buffer **************/
     let mut user_ring = libbpf_rs::UserRingBuffer::new(&skeleton.maps.user_ring).unwrap();
-    userbuf::pass_arguments(&mut user_ring);
+    // we only want to pass args to userbuf if the user has made some change to the filtering
+    if let Some(ip) = parsed_ip{
+        userbuf::pass_arguments(&mut user_ring, ip);
+    }
 
     //Set up ring buffer with event handler
     let mut builder = libbpf_rs::RingBufferBuilder::new();
