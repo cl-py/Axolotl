@@ -1,3 +1,11 @@
+/**
+ * @file filtering.bpf.c
+ * 
+ * @brief bpf prog for filtering based off ip
+ * 
+ * @details
+ */
+
 #include <linux/bpf.h>
 #include <linux/types.h>
 #include <linux/if_ether.h>
@@ -5,21 +13,40 @@
 #include <linux/pkt_cls.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_endian.h>
+
 #include "defs.h"
+
 
 char LICENSE[] SEC("license") = "GPL";
 
+/**==========================================================================================*
+ * 										 	 BPF Data	   								     *
+ *===========================================================================================*/
 
-struct{
-    __uint(type, BPF_MAP_TYPE_USER_RINGBUF);
-    __uint(max_entries, 256 * 1024);
-} user_ring SEC(".maps");
+struct{											//	User ring takes data from user space.
+    __uint(type, BPF_MAP_TYPE_USER_RINGBUF);	//	This is used to read the configurations
+    __uint(max_entries, 256 * 1024);			//  set by the client.
+} user_ring SEC(".maps");						//
 
-struct {
-	__uint(type, BPF_MAP_TYPE_RINGBUF);
-	__uint(max_entries, 256 * 1024);
-} events SEC(".maps");
+struct {										//
+	__uint(type, BPF_MAP_TYPE_RINGBUF);			//
+	__uint(max_entries, 256 * 1024);			//
+} events SEC(".maps");							//
 
+/**==========================================================================================*
+ * 										 	 Code	   									     *
+ *===========================================================================================*/
+
+/**
+ * @brief User ring callback function when draining
+ * 
+ * @param dynptr
+ * @param context
+ * @return 0 on success, 1 otherwise
+ * 
+ * @details This function allows us to read data from userspace program. Used specifically for the ip configurations.
+ * 
+ */
 static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
 {
     const struct configs *data;
@@ -31,9 +58,15 @@ static long user_ringbuf_callback(struct bpf_dynptr *dynptr, void *context)
     return 0;
 }
 
-/// @tchook {"ifindex":3, "attach_point":"BPF_TC_INGRESS"}
-/// @tcopts {"handle":1, "priority":1}
-
+/**
+ * @brief Hook for the traffic control later
+ * 
+ * @param ctx -> socket buffer data
+ * @return Whether or not to allow the packet to proceed
+ * 
+ * @details	This is the hook for the traffic control layer. This is the earliest we hook into the network stack
+ * 			allowing us to filter our IPs without the overhead of the rest of the stack. 
+ */
 SEC("tc")
 int tc_ingress(struct __sk_buff *ctx)
 {

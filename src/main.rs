@@ -1,43 +1,39 @@
-/*
-    Project: Axolotl
-    Creators: Claudia Varnas, Eduardo Murillo
+/**
+ * @Project: Axolotl
+ * @Creators: Claudia Varnas, Eduardo Murillo
+ *
+ * @details This is the file that attaches the eBPF programs to their specified attachment points that are 
+ *          specified in the eBPF programs. This also does the building for all components of the transactions 
+ *          between producers and consumer roles that the user space and kernel space hold.
+ */
 
-    This is the file that attaches the eBPF programs to their specified
-    attachment points that are specified in the eBPF programs. This also does
-    the building for all components of the transactions between 
-    producers and consumer roles that the user space and kernel space hold.
-
-*/
 
 // use std::library::function
-use std::mem::MaybeUninit; //allows for safe memory allocation without initialization
-use std::time::Duration; //Imports time types (seconds, etc)
+use std::mem::MaybeUninit;                  //allows for safe memory allocation without initialization
+use std::time::Duration;                    //Imports time types (seconds, etc)
 use std::os::unix::io::AsFd as  _; 
+use clap::{ArgAction, Parser, Subcommand};  //Command line handling
+use nix::net::if_::if_nametoindex;          // wol1 conversion to system index
 
-//these are for command-line handling
-use clap::{ArgAction, Parser, Subcommand};
-
-//allows for conversion of wol1 to the system's index
-use nix::net::if_::if_nametoindex;
-
-//libbpf_rs libraries
+/* libbpf_rs libraries */
 use libbpf_rs::{skel::{OpenSkel, Skel, SkelBuilder}};
 use libbpf_rs::TcHookBuilder;
 use libbpf_rs::TC_INGRESS;
 
-//how to import the eBPF program
-mod filtering{
-    include!(concat!(env!("OUT_DIR"), "/filtering.skel.rs"));
-}
+/* import the eBPF program */
+mod filtering{include!(concat!(env!("OUT_DIR"), "/filtering.skel.rs"));}
+mod logging{include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));}
 
-mod logging{
-    include!(concat!(env!("OUT_DIR"), "/logging.skel.rs"));
-}
+/* other rust files */
 mod event;
 mod userbuf;
 mod lib;
 
 use filtering::*;
+
+/**==========================================================================================*
+ * 								  Command Line Parser Setup	   	    					     *
+ *===========================================================================================*/
 
 #[derive(Parser)]
 struct Cli{
@@ -74,6 +70,18 @@ enum IpFilterCommand{
     Ls,
 }
 
+/**==========================================================================================*
+ * 									    Axolotl Code	   								     *
+ *===========================================================================================*/
+
+/**
+ * @brief
+ * 
+ * @param
+ * @return
+ * 
+ * @details
+ */
 fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
 
     let mut parsed_ip: Option<u32> = None;
@@ -97,6 +105,7 @@ fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
     let mut open_object = MaybeUninit::uninit();
     let open_skeleton = skeleton_builder.open(&mut open_object).unwrap(); 
     let mut skeleton = open_skeleton.load().unwrap();
+    
     //assigns attack to something so its not destructed after it executes..was causing a silent crash
     let mut __link_state = skeleton.attach();
 
@@ -130,7 +139,14 @@ fn run_filter(cmd: IpFilterCommand) -> Result<(), libbpf_rs::Error>{
     Ok(())
 }
 
-//this sets the return type of main
+/**
+ * @brief
+ * 
+ * @param
+ * @return
+ * 
+ * @details
+ */
 fn main() -> Result<(), libbpf_rs::Error>{
 
     /************** Parsing command-line arguments **************/

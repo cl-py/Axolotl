@@ -1,3 +1,9 @@
+/**
+ * 
+ * 
+ * 
+ */
+
 use libbpf_rs::{UserRingBuffer};
 use plain::Plain;
 
@@ -8,6 +14,13 @@ pub struct configs{
 
 unsafe impl Plain for configs{}
 
+/**==========================================================================================*
+ * 									    Axolotl Code	   								     *
+ *===========================================================================================*/
+
+ /**
+  * 
+  */
 pub fn pass_arguments(user_ring: &mut UserRingBuffer, ip:u32, ) {
     let mut buffersample = user_ring.reserve(std::mem::size_of::<configs>()); //reserve in bytes how much space
 

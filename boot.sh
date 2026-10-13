@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#==============================================================#
+#  @File boot.sh                                               #
+#  @Brief Boot file for Axolotl                                #
+#                                                              #
+#  @Details This File will initiate downloading the necessary  #
+#           libraries and building Axolotl for the user        #
+#                                                              #
+#==============================================================#
+
 install_dependencies() {
 
     echo "$line_start Checking dependencies"
@@ -55,18 +64,22 @@ verify_root(){
 
 }
 
-#######################################################################
+main(){
+    verify_root
+
+    echo "$line_start Beginning boot up process"
+
+    install_dependencies
+
+    make
+}
+
+#======================================================================#
 
 line_start="[-]"
 good_result="[0]"
 bad_result="[X]"
 
-verify_root
+main
 
-echo "$line_start Beginning boot up process"
-
-install_dependencies
-
-make
-
-#######################################################################
+#======================================================================#
